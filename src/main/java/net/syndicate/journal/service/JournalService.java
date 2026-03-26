@@ -33,7 +33,6 @@ public class JournalService {
         if (existingJournalEntity != null) {
             existingJournalEntity.setTitle(updatedJournalEntity.getTitle() != null && updatedJournalEntity.getTitle().isEmpty() ? existingJournalEntity.getTitle() : updatedJournalEntity.getTitle());
             existingJournalEntity.setContent(updatedJournalEntity.getContent() != null && updatedJournalEntity.getContent().isEmpty() ? existingJournalEntity.getContent() : updatedJournalEntity.getContent());
-            System.out.println( existingJournalEntity.getTitle() + " " + existingJournalEntity.getContent());
             journalRepo.save(existingJournalEntity);
             return "Journal " + existingJournalEntity.getId() + " updated successfully!";
         }
@@ -42,8 +41,7 @@ public class JournalService {
         }
     }
 
-    public String deleteJournal(Long id) {
+    public void deleteJournal(Long id) {
         journalRepo.deleteById(id);
-        return "Journal " + id + " deleted successfully!";
     }
 }
