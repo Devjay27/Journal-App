@@ -1,10 +1,11 @@
 package net.syndicate.journal.service;
 
+import jakarta.transaction.Transactional;
 import net.syndicate.journal.entity.JournalEntity;
+import net.syndicate.journal.entity.UserEntity;
 import net.syndicate.journal.repository.JournalRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -14,9 +15,17 @@ public class JournalService {
     @Autowired
     private JournalRepo journalRepo;
 
-    public String saveJournal( JournalEntity journalEntity ) {
+    @Autowired
+    private UserService userService;
+
+    @Transactional
+    public String saveJournal( JournalEntity journalEntity, String username ) {
+        UserEntity user = userService.getByUsername(username);
         journalEntity.setCreated(LocalDateTime.now());
-        journalRepo.save(journalEntity);
+        journalEntity.setUser(user);
+        JournalEntity newJournal = journalRepo.save(journalEntity);
+        user.getJournals().add(newJournal);
+        userService.saveUser(user);
         return "Journal " + journalEntity.getId() + " saved successfully!";
     }
 

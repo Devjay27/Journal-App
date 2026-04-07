@@ -1,58 +1,39 @@
 package net.syndicate.journal.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-
 import java.time.LocalDateTime;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name="journal")
+@Data
+@NoArgsConstructor
 public class JournalEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @Column(name="journal_id")
+    private Long id;
 
     @NotNull
     @Size(min = 3, max = 100)
+    @Column(name="title")
     private String title;
 
     @NotNull
     @Size(min = 10, max = 1000)
+    @Column(name="content")
     private String content;
 
     @NotNull
+    @Column(name="created")
     private LocalDateTime created;
 
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public LocalDateTime getCreated() {
-        return created;
-    }
-
-    public void setCreated(LocalDateTime created) {
-        this.created = created;
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="user_id")
+    @JsonBackReference
+    private UserEntity user;
 }
