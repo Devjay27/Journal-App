@@ -41,13 +41,23 @@ public class User {
         }
     }
 
-    @PutMapping("/update-user/{id}")
-    public ResponseEntity<String> updateUser(@PathVariable long id, @RequestBody UserEntity userEntity) {
+    @PutMapping("/update-user")
+    public ResponseEntity<String> updateUser(@RequestBody UserEntity userEntity) {
         try {
-            return new ResponseEntity<>(userService.updateUser(id, userEntity), HttpStatus.OK);
+            return new ResponseEntity<>(userService.updateUser(userEntity), HttpStatus.OK);
         }
         catch (Exception e) {
             return new ResponseEntity<>("Failed to update User", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/update-password")
+    public ResponseEntity<String> updatePassword(@RequestBody String newPassword) {
+        try {
+            return new ResponseEntity<>(userService.updatePassword(newPassword), HttpStatus.OK);
+        }
+        catch (Exception e) {
+            return new ResponseEntity<>("Failed to update Password", HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -55,6 +65,17 @@ public class User {
     public ResponseEntity<Void> deleteUser(@PathVariable long id) {
         try {
             userService.deleteUser(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @DeleteMapping("/delete-by-username")
+    public ResponseEntity<Void> deleteByUsername() {
+        try {
+            userService.deleteByUsername();
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         catch (Exception e) {

@@ -1,8 +1,13 @@
 package net.syndicate.journal.service;
 
+import jakarta.transaction.Transactional;
 import net.syndicate.journal.entity.UserEntity;
 import net.syndicate.journal.repository.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -13,7 +18,10 @@ public class UserService {
     @Autowired
     private UserRepo userRepo;
 
+    private static final PasswordEncoder encoder = new BCryptPasswordEncoder();
+
     public String saveUser(UserEntity userEntity) {
+        userEntity.setPassword(encoder.encode(userEntity.getPassword()));
         userRepo.save(userEntity);
         return "User " + userEntity.getId() + " has been created successfully";
     }
@@ -26,22 +34,46 @@ public class UserService {
         return userRepo.findById(id);
     }
 
-    public String updateUser(long id, UserEntity updatedUserEntity) {
-        UserEntity existingUserEntity = userRepo.findById(id).orElse(null);
+    public String updateUser(UserEntity updatedUserEntity) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userName = authentication.getName();
+        UserEntity existingUserEntity = userRepo.getByUsername(userName);
+
         if (existingUserEntity != null) {
             existingUserEntity.setFirstname(updatedUserEntity.getFirstname() != null && updatedUserEntity.getFirstname().isEmpty() ? existingUserEntity.getFirstname() : updatedUserEntity.getFirstname());
             existingUserEntity.setLastname(updatedUserEntity.getLastname() != null && updatedUserEntity.getLastname().isEmpty() ? existingUserEntity.getLastname() : updatedUserEntity.getLastname());
             existingUserEntity.setEmail(updatedUserEntity.getEmail() != null && updatedUserEntity.getEmail().isEmpty() ? existingUserEntity.getEmail() : updatedUserEntity.getEmail());
             userRepo.save(existingUserEntity);
-            return "User " + existingUserEntity.getId() + " has been updated successfully";
+            return "User " + existingUserEntity.getUsername() + " has been updated successfully";
         }
         else  {
-            return "User " + id + " failed to update";
+            return "User " + userName + " failed to update";
+        }
+    }
+
+    public String updatePassword(String newPassword) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userName = authentication.getName();
+        UserEntity existingUserEntity = userRepo.getByUsername(userName);
+        if (existingUserEntity != null) {
+            existingUserEntity.setPassword(encoder.encode(newPassword));
+            userRepo.save(existingUserEntity);
+            return "Password for" + existingUserEntity.getUsername() + " has been updated successfully";
+        }
+        else {
+            return "Password for " + userName + " failed to update";
         }
     }
 
     public void deleteUser(long id) {
         userRepo.deleteById(id);
+    }
+
+    @Transactional
+    public void deleteByUsername() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userName = authentication.getName();
+        userRepo.deleteByUsername(userName);
     }
 
     public UserEntity getByUsername(String username) {

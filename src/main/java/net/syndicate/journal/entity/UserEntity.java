@@ -38,11 +38,16 @@ public class UserEntity {
     private String username;
 
     @NotNull
-    @Size(min=8, max=50)
+    @Size(min=8, max=200)
     @Column(name="password")
     private String password;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<JournalEntity> journals = new ArrayList<>();
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name="role")
+    private RoleType role;
 }
